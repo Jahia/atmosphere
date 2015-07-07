@@ -147,7 +147,7 @@ public class HeartbeatInterceptor extends AtmosphereInterceptorAdapter {
         request.setAttribute(HEARTBEAT_FUTURE, heartBeat.schedule(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
-                if (AtmosphereResourceImpl.class.cast(r).isInScope() && r.isSuspended() && r.getRequest().getServletPath().startsWith("/atmosphere")) {
+                if (AtmosphereResourceImpl.class.cast(r).isInScope() && r.isSuspended() && r.getRequest().getServletPath() != null && r.getRequest().getServletPath().startsWith("/atmosphere")) {
                     try {
                         logger.trace("Heartbeat for Resource {}", r);
                         response.write(paddingBytes, false);
