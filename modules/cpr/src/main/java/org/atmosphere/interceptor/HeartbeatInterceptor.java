@@ -143,54 +143,16 @@ public class HeartbeatInterceptor extends AtmosphereInterceptorAdapter {
         }
     }
 
-<<<<<<< HEAD
     public HeartbeatInterceptor clock(final AtmosphereResource r, final AtmosphereRequest request, final AtmosphereResponse response) {
         request.setAttribute(HEARTBEAT_FUTURE, heartBeat.schedule(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
-                if (AtmosphereResourceImpl.class.cast(r).isInScope() && r.isSuspended()) {
+                if (AtmosphereResourceImpl.class.cast(r).isInScope() && r.isSuspended() && r.getRequest().getServletPath().startsWith("/atmosphere")) {
                     try {
                         logger.trace("Heartbeat for Resource {}", r);
                         response.write(paddingBytes, false);
                         if (Utils.resumableTransport(r.transport())) {
                             r.resume();
-=======
-    /**
-     * <p>
-     * Configures the heartbeat sent by the server in an interval in seconds specified in parameter for the given
-     * resource.
-     * </p>
-     *
-     * @param interval the interval in seconds
-     * @param r        the resource
-     * @param request  the request response
-     * @param response the resource response
-     * @return this
-     */
-    public HeartbeatInterceptor clock(final int interval,
-                                      final AtmosphereResource r,
-                                      final AtmosphereRequest request,
-                                      final AtmosphereResponse response) {
-
-        try {
-            request.setAttribute(HEARTBEAT_FUTURE, heartBeat.schedule(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    synchronized (r) {
-                        if (AtmosphereResourceImpl.class.cast(r).isInScope() && r.isSuspended() && r.getRequest().getServletPath().startsWith("/atmosphere")) {
-                            try {
-                                logger.trace("Heartbeat for Resource {}", r);
-                                response.write(paddingBytes, false);
-                                if (Utils.resumableTransport(r.transport()) && resumeOnHeartbeat) {
-                                    r.resume();
-                                } else {
-                                    response.flushBuffer();
-                                }
-                            } catch (Throwable t) {
-                                logger.trace("{}", r.uuid(), t);
-                                cancelF(request);
-                            }
->>>>>>> 99af6ff... QABACKLOG-747 : Check that the request is still connected/allocated to an atmosphere servlet
                         } else {
                             response.flushBuffer();
                         }
