@@ -175,7 +175,7 @@ public abstract class AsynchronousProcessor implements AsyncSupport<AtmosphereRe
                     res.flushBuffer();
                     return new Action();
                 }
-            } 
+            }
         }
 
         req.setAttribute(FrameworkConfig.SUPPORT_SESSION, supportSession());

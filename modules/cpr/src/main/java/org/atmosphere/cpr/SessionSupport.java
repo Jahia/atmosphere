@@ -51,7 +51,7 @@ public class SessionSupport implements HttpSessionListener {
                             AtmosphereResourceImpl.class.cast(r).session(null);
                         }
                     }
-                } 
+                }
             }
         } catch (Throwable t) {
             logger.warn("", t);
