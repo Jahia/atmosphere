@@ -153,28 +153,7 @@ public abstract class
         if (supportSession()) {
             // Create the session needed to support the Resume
             // operation from disparate requests.
-            HttpSession s = req.getSession(config.getInitParameter(PROPERTY_SESSION_CREATE, true));
-
-            // https://github.com/Atmosphere/atmosphere/issues/2034
-            try {
-                if (s != null && s.isNew()) {
-                    s.setAttribute(FrameworkConfig.BROADCASTER_FACTORY, config.getBroadcasterFactory());
-                }
-            } catch(IllegalStateException ex) {
-                AtmosphereResourceImpl r = AtmosphereResourceImpl.class.cast(req.resource());
-                logger.warn("Session Expired for {}. Closing the connection", req.uuid(), ex);
-                if (r != null) {
-                    logger.trace("Ending request for {}", r.uuid());
-                    endRequest(r, true);
-                    return Action.CANCELLED;
-                } else {
-                    logger.trace("Sending error for {}", req.uuid());
-                    res.setStatus(500);
-                    res.addHeader(X_ATMOSPHERE_ERROR, "Session expired");
-                    res.flushBuffer();
-                    return new Action();
-                }
-            }
+            req.getSession(config.getInitParameter(PROPERTY_SESSION_CREATE, true));
         }
 
         req.setAttribute(FrameworkConfig.SUPPORT_SESSION, supportSession());
