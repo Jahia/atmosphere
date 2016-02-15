@@ -147,11 +147,7 @@ public abstract class AsynchronousProcessor implements AsyncSupport<AtmosphereRe
         if (supportSession()) {
             // Create the session needed to support the Resume
             // operation from disparate requests.
-            HttpSession s = req.getSession(config.getInitParameter(PROPERTY_SESSION_CREATE, true));
-            if (s != null && s.isNew()) {
-                s.setAttribute(FrameworkConfig.BROADCASTER_FACTORY, config.getBroadcasterFactory());
-            }
-
+            req.getSession(config.getInitParameter(PROPERTY_SESSION_CREATE, true));
         }
 
         req.setAttribute(FrameworkConfig.SUPPORT_SESSION, supportSession());

@@ -43,7 +43,8 @@ public class SessionSupport implements HttpSessionListener {
         logger.trace("Session destroyed");
         try {
             HttpSession s = se.getSession();
-            BroadcasterFactory f = (BroadcasterFactory) s.getAttribute(FrameworkConfig.BROADCASTER_FACTORY);
+            BroadcasterFactory f = (BroadcasterFactory) se.getSession().getServletContext()
+                    .getAttribute(FrameworkConfig.BROADCASTER_FACTORY);
             if (f != null) {
                 s.setAttribute(FrameworkConfig.BROADCASTER_FACTORY, null);
                 for (Broadcaster b : f.lookupAll()) {
