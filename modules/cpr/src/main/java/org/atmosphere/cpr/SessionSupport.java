@@ -47,9 +47,14 @@ public class SessionSupport implements HttpSessionListener {
             if (f != null) {
                 for (Broadcaster b : f.lookupAll()) {
                     for (AtmosphereResource r : b.getAtmosphereResources()) {
-                        if (r.session(false) != null && r.session().getId().equals(s.getId())) {
-                            AtmosphereResourceImpl.class.cast(r).session(null);
+                        try {
+                            if (r.session() != null && r.session().getId().equals(s.getId())) {
+                                AtmosphereResourceImpl.class.cast(r).session(null);
+                            }
+                        } catch (IllegalStateException e) {
+                            logger.debug("Session cannot be created right now and remains being null in the resource", e);
                         }
+
                     }
                 }
             }
