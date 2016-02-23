@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import static org.atmosphere.util.Utils.closeMessage;
 
+import javax.servlet.http.HttpSession;
+
 
 /**
  * When the browser close the connection, the atmosphere.js will send an unsubscribe message to tell
@@ -70,7 +72,13 @@ public class OnDisconnectInterceptor extends AtmosphereInterceptorAdapter {
                 return Action.CONTINUE;
             }
             logger.debug("AtmosphereResource {} disconnected", uuid);
-
+            
+            // Work around the problem that session instances are recreated on every request when loaded from an external store
+            HttpSession session = r.session(false);
+            if (session != null) {
+                AtmosphereResourceImpl.class.cast(ss).session(session);
+            }
+            
             // Block websocket closing detection
             AtmosphereResourceEventImpl.class.cast(ss.getAtmosphereResourceEvent()).isClosedByClient(true);
 
