@@ -1,0 +1,66 @@
+# Build the cpr module and publish its snapshot to the Jahia Nexus, on every push to the
+# maintained branch.
+name: On merge to the maintained branch
+
+on:
+  push:
+    branches:
+      - 'atmosphere-project-2.5.4-jahia'
+    tags-ignore:
+      - '**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build and publish the snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set environment variables from parameters
+        shell: bash
+        run: |
+          echo "NEXUS_USERNAME=${{ secrets.NEXUS_USERNAME }}" >> "$GITHUB_ENV"
+          echo "NEXUS_PASSWORD=${{ secrets.NEXUS_PASSWORD }}" >> "$GITHUB_ENV"
+
+      # The compiler plugin targets Java 1.7, which recent JDKs refuse.
+      - name: Set up JDK 8
+        uses: actions/setup-java@v5
+        with:
+          java-version: '8'
+          distribution: temurin
+          cache: maven
+
+      - name: Deploy with Maven
+        shell: bash
+        run: >-
+          mvn -s .github/maven.settings.xml -ntp -B
+          -f modules/cpr/pom.xml
+          -Dmaven.javadoc.skip=true -Dgpg.skip=true
+          clean deploy
+
+      - name: Report where the artifact landed
+        shell: bash
+        run: |
+          set -euo pipefail
+          # actions/setup-java sets MAVEN_ARGS=-ntp, which hides every transfer line, so the
+          # location is read from the project rather than from the Maven log.
+          ev() {
+            mvn -q -B -N -s .github/maven.settings.xml -f modules/cpr/pom.xml \
+              org.apache.maven.plugins:maven-help-plugin:3.4.0:evaluate \
+              -Dexpression="$1" -DforceStdout
+          }
+          version="$(ev project.version)"
+          case "$version" in
+            *-SNAPSHOT) repository="$(ev project.distributionManagement.snapshotRepository.url)" ;;
+            *)          repository="$(ev project.distributionManagement.repository.url)" ;;
+          esac
+          group="$(ev project.groupId | tr '.' '/')"
+          artifact="$(ev project.artifactId)"
+          echo "::notice title=Snapshot published::${repository%/}/$group/$artifact/$version/"
